@@ -267,6 +267,7 @@ namespace Ember
         private void ClockInButton_Click(object sender, EventArgs e)
         {
             ClockedIn = !ClockedIn;
+            UpdateClockedStatus(ClockedIn);
             UpdateVisualsOnForm();
         }
     }
