@@ -21,7 +21,7 @@ namespace Ember
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (ClockedIn || AutoClockedIn)
+            if (AutoClockedIn)
             {
                 TimesheetService.ClockOut();
             }
