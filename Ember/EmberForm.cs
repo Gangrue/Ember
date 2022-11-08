@@ -174,6 +174,11 @@ namespace Ember
             {
                 ClockInButton.BackColor = Color.Green;
                 ClockInButton.Text = "Clocked In";
+                if (!AutoClockedIn)
+                {
+                    ClockInButton.Text = "Stop Slacking";
+                    ClockInButton.BackColor = Color.Orange;
+                }
             }
             else
             {
