@@ -13,7 +13,7 @@ namespace Ember
         private Point lastLocation;
         public bool AutoClockedIn;
         public bool ClockedIn;
-        public int ClockedInTimeInSeconds;
+        public TimeSpan ClockedInTime;
         public EmberForm()
         {
             InitializeComponent();
@@ -21,21 +21,50 @@ namespace Ember
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if (ClockedIn || AutoClockedIn)
+            {
+                TimesheetService.ClockOut();
+            }
             Close();
         }
 
         private void Ember_Load(object sender, EventArgs e)
         {
-            ClockedIn = true;
+            ClockedIn = TimesheetService.GetCurrentClockedInStatus();
+            AutoClockedIn = ClockedIn;
+            ClockedInTime = TimesheetService.GetDailyWorkingTimeForDate(DateTime.Now);
             StartProcessCheckingTimer();
+            StartFastUpdateTimer();
+            UpdateVisualsOnForm();
         }
 
+        private void StartFastUpdateTimer()
+        {
+            Timer MyTimer = new Timer();
+            MyTimer.Interval = (1 * 1000); // 1 seconds
+            MyTimer.Tick += new EventHandler(FastCheckTimerTick);
+            MyTimer.Start();
+        }
         private void StartProcessCheckingTimer()
         {
             Timer MyTimer = new Timer();
             MyTimer.Interval = (10 * 1000); // 10 seconds
             MyTimer.Tick += new EventHandler(ProcessCheckTimerTick);
             MyTimer.Start();
+        }
+        private void FastCheckTimerTick(object sender, EventArgs e)
+        {
+            bool theDudeIsWorking = AutoClockedIn;
+            var inactiveTime = GetInactiveTime();
+            var inactiveTimeMax = new TimeSpan(0, 0, 0, 0, 60 * 1000);
+            if (inactiveTime != null && inactiveTime >= inactiveTimeMax)
+                theDudeIsWorking = false;
+
+            if (theDudeIsWorking)
+                ClockedInTime = ClockedInTime.Add(new TimeSpan(0, 0, 1));
+
+            UpdateClockedStatus(theDudeIsWorking);
+            UpdateVisualsOnForm();
         }
         private void ProcessCheckTimerTick(object sender, EventArgs e)
         {
@@ -86,7 +115,6 @@ namespace Ember
             if (isWorking && ClockedIn)
             {
                 AutoClockedIn = true;
-                ClockedInTimeInSeconds += 10;
                 if (previousClockedStatus != AutoClockedIn)
                 {
                     TimesheetService.ClockIn();
@@ -130,6 +158,7 @@ namespace Ember
         }
         private void UpdateVisualsOnForm()
         {
+            //This is the real clocked in
             if (AutoClockedIn)
             {
                 ClockedInLabel.Text = "Clocked In";
@@ -140,12 +169,18 @@ namespace Ember
                 ClockedInLabel.Text = "Clocked Out";
                 ClockedInLabel.ForeColor = Color.OrangeRed;
             }
-            var ClockedInTimeInMinutes = (ClockedInTimeInSeconds / 60);
-            var ClockedInTimeHours = ClockedInTimeInMinutes / 60;
-            var tempClockedInTimeInSeconds = ClockedInTimeInSeconds % 60;
-            var tempClockedInTimeInMinutes = ClockedInTimeInMinutes % 60;
-
-            ClockedInTimerLabel.Text = "Clocked in for: " + ClockedInTimeHours + ":" + tempClockedInTimeInMinutes + ":" + tempClockedInTimeInSeconds;
+            //this is the manual clocked in... This one is not respected if user is inactive
+            if (ClockedIn)
+            {
+                ClockInButton.BackColor = Color.Green;
+                ClockInButton.Text = "Clocked In";
+            }
+            else
+            {
+                ClockInButton.BackColor = Color.Red;
+                ClockInButton.Text = "Clocked Out";
+            }
+            ClockedInTimerLabel.Text = "Clocked in for: " + ClockedInTime.Hours + ":" + ClockedInTime.Minutes + ":" + ClockedInTime.Seconds;
         }
         private bool CompareProcessNameToListOfBlackListSites(string nameOfSite)
         {
@@ -232,16 +267,7 @@ namespace Ember
         private void ClockInButton_Click(object sender, EventArgs e)
         {
             ClockedIn = !ClockedIn;
-            if (ClockedIn)
-            {
-                ClockInButton.BackColor = Color.Green;
-                ClockInButton.Text = "Clocked In";
-            }
-            else
-            {
-                ClockInButton.BackColor = Color.Red;
-                ClockInButton.Text = "Clocked Out";
-            }
+            UpdateVisualsOnForm();
         }
     }
 }
