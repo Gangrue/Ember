@@ -18,8 +18,8 @@ namespace Ember
         public EmberForm()
         {
             InitializeComponent();
-            //this.TransparencyKey = Color.Turquoise;
-            //this.BackColor = Color.Turquoise;
+            this.TransparencyKey = Color.Turquoise;
+            this.BackColor = Color.Turquoise;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -125,6 +125,7 @@ namespace Ember
                 return;
             }
             AutoClockedIn = false;
+            StreakTime = new TimeSpan();
             if (previousClockedStatus != AutoClockedIn)
             {
                 TimesheetService.ClockOut();
@@ -281,6 +282,16 @@ namespace Ember
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void closeFormButton_MouseHover(object sender, EventArgs e)
+        {
+            closeFormButton.BackgroundImage = Properties.Resources.xOffHover;
+        }
+
+        private void closeFormButton_MouseLeave(object sender, EventArgs e)
+        {
+            closeFormButton.BackgroundImage = Properties.Resources.xOff;
         }
     }
 }
