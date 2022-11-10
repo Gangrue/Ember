@@ -14,9 +14,12 @@ namespace Ember
         public bool AutoClockedIn;
         public bool ClockedIn;
         public TimeSpan ClockedInTime;
+        public TimeSpan StreakTime;
         public EmberForm()
         {
             InitializeComponent();
+            //this.TransparencyKey = Color.Turquoise;
+            //this.BackColor = Color.Turquoise;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -33,6 +36,7 @@ namespace Ember
             ClockedIn = TimesheetService.GetCurrentClockedInStatus();
             AutoClockedIn = ClockedIn;
             ClockedInTime = TimesheetService.GetDailyWorkingTimeForDate(DateTime.Now);
+            StreakTime = new TimeSpan();
             StartProcessCheckingTimer();
             StartFastUpdateTimer();
             UpdateVisualsOnForm();
@@ -61,7 +65,10 @@ namespace Ember
                 theDudeIsWorking = false;
 
             if (theDudeIsWorking)
+            {
                 ClockedInTime = ClockedInTime.Add(new TimeSpan(0, 0, 1));
+                StreakTime = StreakTime.Add(new TimeSpan(0, 0, 1));
+            }
 
             UpdateClockedStatus(theDudeIsWorking);
             UpdateVisualsOnForm();
@@ -69,10 +76,6 @@ namespace Ember
         private void ProcessCheckTimerTick(object sender, EventArgs e)
         {
             bool theDudeIsWorking = CheckForLoserChromeTabs();
-            if (theDudeIsWorking)
-            {
-                theDudeIsWorking = CheckForGamerTabs();
-            }
             if (theDudeIsWorking)
             {
                 theDudeIsWorking = CheckForBlacklistedTabs();
@@ -128,16 +131,6 @@ namespace Ember
             }
         }
 
-        private bool CheckForGamerTabs()
-        {
-            Process[] procsSteam = Process.GetProcessesByName("steam");
-
-            if (procsSteam.Length <= 0)
-                return true;
-
-            return false;
-        }
-
         private bool CheckForLoserChromeTabs()
         {
             Process[] procsChrome = Process.GetProcessesByName("chrome");
@@ -158,34 +151,38 @@ namespace Ember
         }
         private void UpdateVisualsOnForm()
         {
-            //This is the real clocked in
-            if (AutoClockedIn)
-            {
-                ClockedInLabel.Text = "Clocked In";
-                ClockedInLabel.ForeColor = Color.GreenYellow;
-            }
-            else
-            {
-                ClockedInLabel.Text = "Clocked Out";
-                ClockedInLabel.ForeColor = Color.OrangeRed;
-            }
-            //this is the manual clocked in... This one is not respected if user is inactive
             if (ClockedIn)
             {
-                ClockInButton.BackColor = Color.Green;
-                ClockInButton.Text = "Clocked In";
                 if (!AutoClockedIn)
                 {
-                    ClockInButton.Text = "Stop Slacking";
-                    ClockInButton.BackColor = Color.Orange;
+                    ClockInButton.Text = "Stop wasting time!";
+                    if (ClockInButton.Image != Properties.Resources.SmotheredAnimation)
+                    {
+                        ClockInButton.Image = Properties.Resources.SmotheredAnimation;
+                    }
+                }
+                else
+                {
+                    var tempHours = (StreakTime.Hours < 10) ? "0" + StreakTime.Hours : "" + StreakTime.Hours;
+                    var tempMinutes = (StreakTime.Minutes < 10) ? "0" + StreakTime.Minutes : "" + StreakTime.Minutes;
+                    var tempSeconds = (StreakTime.Seconds < 10) ? "0" + StreakTime.Seconds : "" + StreakTime.Seconds;
+                    ClockInButton.Text = tempHours + ":" + tempMinutes + ":" + tempSeconds;
+                    if (ClockInButton.Image != Properties.Resources.FlameAnimation)
+                    {
+                        ClockInButton.Image = Properties.Resources.FlameAnimation;
+                    }
                 }
             }
             else
             {
-                ClockInButton.BackColor = Color.Red;
                 ClockInButton.Text = "Clocked Out";
+                ClockInButton.Image = Properties.Resources.ClockedOutAnimation;
             }
-            ClockedInTimerLabel.Text = "Clocked in for: " + ClockedInTime.Hours + ":" + ClockedInTime.Minutes + ":" + ClockedInTime.Seconds;
+
+            var hours = (ClockedInTime.Hours < 10) ? "0" + ClockedInTime.Hours : "" + ClockedInTime.Hours;
+            var minutes = (ClockedInTime.Minutes < 10) ? "0" + ClockedInTime.Minutes : "" + ClockedInTime.Minutes;
+            var seconds = (ClockedInTime.Seconds < 10) ? "0" + ClockedInTime.Seconds : "" + ClockedInTime.Seconds;
+            ClockedInTimerLabel.Text = hours + ":" + minutes + ":" + seconds;
         }
         private bool CompareProcessNameToListOfBlackListSites(string nameOfSite)
         {
@@ -274,6 +271,16 @@ namespace Ember
             ClockedIn = !ClockedIn;
             UpdateClockedStatus(ClockedIn);
             UpdateVisualsOnForm();
+        }
+
+        private void ClockedInLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
