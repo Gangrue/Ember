@@ -19,11 +19,21 @@ namespace Ember
         public TimeSpan StreakTime;
         public string[] ListOfBlackListedPrograms;
         public string[] ListOfBlackListedSites;
+        [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
+        private static extern IntPtr CreateRoundRectRgn
+        (
+            int nLeftRect,     // x-coordinate of upper-left corner
+            int nTopRect,      // y-coordinate of upper-left corner
+            int nRightRect,    // x-coordinate of lower-right corner
+            int nBottomRect,   // y-coordinate of lower-right corner
+            int nWidthEllipse, // width of ellipse
+            int nHeightEllipse // height of ellipse
+        );
         public EmberForm()
         {
-            InitializeComponent();
-            //this.TransparencyKey = Color.Turquoise;
-            //this.BackColor = Color.Turquoise;
+            InitializeComponent(); 
+            this.FormBorderStyle = FormBorderStyle.None;
+            Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 10, 10));
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -36,12 +46,16 @@ namespace Ember
             Environment.Exit(1);
         }
 
+        public void RefreshBlackListOptions()
+        {
+            ListOfBlackListedPrograms = NotepadTimesheetService.GetAllBlackListedPrograms();
+            ListOfBlackListedSites = NotepadTimesheetService.GetAllBlackListedSites();
+        }
+
         private void Ember_Load(object sender, EventArgs e)
         {
             NotepadTimesheetService.CreateDirectoriesIfDoNotExist();
-
-            ListOfBlackListedPrograms = NotepadTimesheetService.GetAllBlackListedPrograms();
-            ListOfBlackListedSites = NotepadTimesheetService.GetAllBlackListedSites();
+            RefreshBlackListOptions();
             ClockedIn = NotepadTimesheetService.GetCurrentClockedInStatus();
             AutoClockedIn = ClockedIn;
             ClockedInTime = NotepadTimesheetService.GetDailyWorkingTimeForDate(DateTime.Now);
@@ -199,9 +213,19 @@ namespace Ember
                     var tempMinutes = (StreakTime.Minutes < 10) ? "0" + StreakTime.Minutes : "" + StreakTime.Minutes;
                     var tempSeconds = (StreakTime.Seconds < 10) ? "0" + StreakTime.Seconds : "" + StreakTime.Seconds;
                     ClockInButton.Text = tempHours + ":" + tempMinutes + ":" + tempSeconds;
-                    if (ClockInButton.Image != Properties.Resources.FlameAnimation)
+                    if (StreakTime.Minutes < 5)
                     {
-                        ClockInButton.Image = Properties.Resources.FlameAnimation;
+                        if (ClockInButton.Image != Properties.Resources.FlameAnimation)
+                        {
+                            ClockInButton.Image = Properties.Resources.FlameAnimation;
+                        }
+                    }
+                    else
+                    {
+                        if (ClockInButton.Image != Properties.Resources.FlameMiddle)
+                        {
+                            ClockInButton.Image = Properties.Resources.FlameMiddle;
+                        }
                     }
                 }
             }
@@ -292,6 +316,7 @@ namespace Ember
         {
             ClockedIn = !ClockedIn;
             UpdateClockedStatus(ClockedIn);
+            RefreshBlackListOptions();
             UpdateVisualsOnForm();
         }
 
@@ -319,7 +344,8 @@ namespace Ember
         {
             if (Application.OpenForms.OfType<EmberOptionsForm>().Count() == 1)
                 Application.OpenForms.OfType<EmberOptionsForm>().First().Close();
-
+            ClockedIn = false;
+            UpdateClockedStatus(ClockedIn);
             optionForm = new EmberOptionsForm();
             optionForm.Show();
         }

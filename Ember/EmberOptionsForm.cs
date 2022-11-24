@@ -107,6 +107,7 @@ namespace Ember
                     sw.WriteLine(line);
                 }
             }
+            Close();
         }
     }
 }

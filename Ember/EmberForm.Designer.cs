@@ -70,7 +70,7 @@
             this.ClockInButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.ClockInButton.Font = new System.Drawing.Font("Century Gothic", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.ClockInButton.ForeColor = System.Drawing.SystemColors.Control;
-            this.ClockInButton.Image = global::Ember.Properties.Resources.SmotheredAnimation;
+            this.ClockInButton.Image = global::Ember.Properties.Resources.NoAnimation;
             this.ClockInButton.Location = new System.Drawing.Point(20, 56);
             this.ClockInButton.Margin = new System.Windows.Forms.Padding(0);
             this.ClockInButton.Name = "ClockInButton";
