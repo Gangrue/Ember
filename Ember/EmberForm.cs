@@ -4,6 +4,7 @@ using System.Windows.Automation;
 using Timer = System.Windows.Forms.Timer;
 using System.Runtime.InteropServices;
 using Ember.Services;
+using System.Text.RegularExpressions;
 
 namespace Ember
 {
@@ -16,6 +17,8 @@ namespace Ember
         public bool ClockedIn;
         public TimeSpan ClockedInTime;
         public TimeSpan StreakTime;
+        public string[] ListOfBlackListedPrograms;
+        public string[] ListOfBlackListedSites;
         public EmberForm()
         {
             InitializeComponent();
@@ -27,16 +30,21 @@ namespace Ember
         {
             if (AutoClockedIn)
             {
-                TimesheetService.ClockOut();
+                NotepadTimesheetService.ClockOut();
             }
+            NotepadTimesheetService.GenerateDailyReportFile();
             Environment.Exit(1);
         }
 
         private void Ember_Load(object sender, EventArgs e)
         {
-            ClockedIn = TimesheetService.GetCurrentClockedInStatus();
+            NotepadTimesheetService.CreateDirectoriesIfDoNotExist();
+
+            ListOfBlackListedPrograms = NotepadTimesheetService.GetAllBlackListedPrograms();
+            ListOfBlackListedSites = NotepadTimesheetService.GetAllBlackListedSites();
+            ClockedIn = NotepadTimesheetService.GetCurrentClockedInStatus();
             AutoClockedIn = ClockedIn;
-            ClockedInTime = TimesheetService.GetDailyWorkingTimeForDate(DateTime.Now);
+            ClockedInTime = NotepadTimesheetService.GetDailyWorkingTimeForDate(DateTime.Now);
             StreakTime = new TimeSpan();
             StartProcessCheckingTimer();
             StartFastUpdateTimer();
@@ -96,6 +104,11 @@ namespace Ember
                 "steam",
                 "discord"
             };
+            if (ListOfBlackListedPrograms != null && ListOfBlackListedPrograms.Length != 1)
+            {
+                listOfLoserTabs = ListOfBlackListedPrograms.ToList();
+                listOfLoserTabs = listOfLoserTabs.Where(s => !string.IsNullOrWhiteSpace(s)).Select(t => Regex.Replace(t.ToLower(), @"\s+", "")).Distinct().ToList();
+            }
             var listOfAllProcesses = Process.GetProcesses();
             foreach(var proc in listOfAllProcesses)
             {
@@ -105,7 +118,7 @@ namespace Ember
 
                 foreach (var blacklistTab in listOfLoserTabs)
                 {
-                    if (procName.Contains(blacklistTab.ToLower()))
+                    if (procName.Contains(blacklistTab))
                         return false;
                 }
             }
@@ -121,7 +134,7 @@ namespace Ember
                 AutoClockedIn = true;
                 if (previousClockedStatus != AutoClockedIn)
                 {
-                    TimesheetService.ClockIn();
+                    NotepadTimesheetService.ClockIn();
                 }
                 return;
             }
@@ -129,7 +142,7 @@ namespace Ember
             StreakTime = new TimeSpan();
             if (previousClockedStatus != AutoClockedIn)
             {
-                TimesheetService.ClockOut();
+                NotepadTimesheetService.ClockOut();
             }
         }
 
@@ -140,12 +153,29 @@ namespace Ember
             if (procsChrome.Length <= 0)
                 return true;
             var isWorking = true;
+
+            var listOfLoserSites = new List<string>()
+                {
+                    "youtube",
+                    "youtu.be",
+                    "twitter",
+                    "facebook",
+                    "itch.io",
+                    "chess"
+                };
+            if (ListOfBlackListedSites != null && ListOfBlackListedSites.Length != 1)
+            {
+                listOfLoserSites = ListOfBlackListedSites.ToList();
+                listOfLoserSites = listOfLoserSites.Where(s => !string.IsNullOrWhiteSpace(s)).Select(t => Regex.Replace(t.ToLower(), @"\s+", "")).Distinct().ToList();
+            }
             foreach (Process proc in procsChrome)
             {
                 var processName = GetProcessServiceName(proc);
                 if (processName == null)
                     continue;
-                isWorking = CompareProcessNameToListOfBlackListSites(processName);
+
+
+                isWorking = CompareProcessNameToListOfBlackListSites(processName, listOfLoserSites);
                 if (!isWorking)
                     return false;
             }
@@ -186,18 +216,8 @@ namespace Ember
             var seconds = (ClockedInTime.Seconds < 10) ? "0" + ClockedInTime.Seconds : "" + ClockedInTime.Seconds;
             ClockedInTimerLabel.Text = hours + ":" + minutes + ":" + seconds;
         }
-        private bool CompareProcessNameToListOfBlackListSites(string nameOfSite)
+        private bool CompareProcessNameToListOfBlackListSites(string nameOfSite, List<string> listOfLoserSites)
         {
-            var listOfLoserSites = new List<string>()
-            {
-                "youtube",
-                "youtu.be",
-                "twitter",
-                "facebook",
-                "itch.io",
-                "chess"
-            };
-
             foreach (var site in listOfLoserSites)
             {
                 if (nameOfSite.ToLower().Contains(site.ToLower()))

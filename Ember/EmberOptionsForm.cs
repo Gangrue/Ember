@@ -22,7 +22,25 @@ namespace Ember
 
         private void EmberOptionsForm_Load(object sender, EventArgs e)
         {
+            var blockedProgramConfigFileName = "BlockedProgramConfig.txt";
+            using (StreamWriter sw = File.AppendText(blockedProgramConfigFileName))
+            {
 
+            }
+            using (StreamReader sr = new StreamReader(blockedProgramConfigFileName))
+            {
+                listOfBlackListedProgramInput.Text = sr.ReadToEnd();
+            }
+
+            var blockedSiteConfigFileName = "BlockedSiteConfig.txt";
+            using (StreamWriter sw = File.AppendText(blockedSiteConfigFileName))
+            {
+
+            }
+            using (StreamReader sr = new StreamReader(blockedSiteConfigFileName))
+            {
+                listOfBlackListedSites.Text = sr.ReadToEnd();
+            }
         }
 
         private void closeFormButton_Click(object sender, EventArgs e)
@@ -60,12 +78,35 @@ namespace Ember
 
         private async void SaveAllOptions()
         {
-            if (File.Exists("BlockedProgramConfig.txt"))
+            var blockedProgramConfigFileName = "BlockedProgramConfig.txt";
+            if (File.Exists(blockedProgramConfigFileName))
             {
-                File.Delete("BlockedProgramConfig.txt");
+                File.Delete(blockedProgramConfigFileName);
             }
             var linesOfProgramsBlackListed = new List<string>();
-            await File.WriteAllLinesAsync("BlockedProgramConfig.txt", linesOfProgramsBlackListed);
+            linesOfProgramsBlackListed.Add(listOfBlackListedProgramInput.Text);
+            using (StreamWriter sw = File.AppendText(blockedProgramConfigFileName))
+            {
+                foreach (var line in linesOfProgramsBlackListed)
+                {
+                    sw.WriteLine(line);
+                }
+            }
+
+            var blockedSiteConfigFileName = "BlockedSiteConfig.txt";
+            if (File.Exists(blockedSiteConfigFileName))
+            {
+                File.Delete(blockedSiteConfigFileName);
+            }
+            var linesOfSiteBlackListed = new List<string>();
+            linesOfSiteBlackListed.Add(listOfBlackListedSites.Text);
+            using (StreamWriter sw = File.AppendText(blockedSiteConfigFileName))
+            {
+                foreach (var line in linesOfSiteBlackListed)
+                {
+                    sw.WriteLine(line);
+                }
+            }
         }
     }
 }
