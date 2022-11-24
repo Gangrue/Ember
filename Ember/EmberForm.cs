@@ -9,6 +9,7 @@ namespace Ember
 {
     public partial class EmberForm : Form
     {
+        private Form optionForm;
         private bool mouseDown;
         private Point lastLocation;
         public bool AutoClockedIn;
@@ -18,8 +19,8 @@ namespace Ember
         public EmberForm()
         {
             InitializeComponent();
-            this.TransparencyKey = Color.Turquoise;
-            this.BackColor = Color.Turquoise;
+            //this.TransparencyKey = Color.Turquoise;
+            //this.BackColor = Color.Turquoise;
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -28,7 +29,7 @@ namespace Ember
             {
                 TimesheetService.ClockOut();
             }
-            Close();
+            Environment.Exit(1);
         }
 
         private void Ember_Load(object sender, EventArgs e)
@@ -292,6 +293,15 @@ namespace Ember
         private void closeFormButton_MouseLeave(object sender, EventArgs e)
         {
             closeFormButton.BackgroundImage = Properties.Resources.xOff;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            if (Application.OpenForms.OfType<EmberOptionsForm>().Count() == 1)
+                Application.OpenForms.OfType<EmberOptionsForm>().First().Close();
+
+            optionForm = new EmberOptionsForm();
+            optionForm.Show();
         }
     }
 }

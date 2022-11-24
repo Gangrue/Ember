@@ -32,6 +32,7 @@
             this.ClockedInTimerLabel = new System.Windows.Forms.Label();
             this.ClockInButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.listOptionsButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -84,12 +85,25 @@
             this.pictureBox1.BackgroundImage = global::Ember.Properties.Resources.TopBar;
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(163, 25);
+            this.pictureBox1.Size = new System.Drawing.Size(136, 25);
             this.pictureBox1.TabIndex = 4;
             this.pictureBox1.TabStop = false;
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.EmberForm_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.EmberForm_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.EmberForm_MouseUp);
+            // 
+            // listOptionsButton
+            // 
+            this.listOptionsButton.FlatAppearance.BorderSize = 0;
+            this.listOptionsButton.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.listOptionsButton.Image = global::Ember.Properties.Resources.list;
+            this.listOptionsButton.Location = new System.Drawing.Point(137, 0);
+            this.listOptionsButton.Margin = new System.Windows.Forms.Padding(0);
+            this.listOptionsButton.Name = "listOptionsButton";
+            this.listOptionsButton.Size = new System.Drawing.Size(28, 25);
+            this.listOptionsButton.TabIndex = 5;
+            this.listOptionsButton.UseVisualStyleBackColor = true;
+            this.listOptionsButton.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // EmberForm
             // 
@@ -97,6 +111,7 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(7)))), ((int)(((byte)(59)))), ((int)(((byte)(58)))));
             this.ClientSize = new System.Drawing.Size(190, 215);
+            this.Controls.Add(this.listOptionsButton);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.ClockInButton);
             this.Controls.Add(this.ClockedInTimerLabel);
@@ -125,5 +140,6 @@
         private Label ClockedInTimerLabel;
         private Button ClockInButton;
         private PictureBox pictureBox1;
+        private Button listOptionsButton;
     }
 }
